@@ -1,0 +1,59 @@
+version: "3.8"
+services:
+  questiondb:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: questiondb
+    ports:
+      - "5432:5432"
+    networks:
+      - my-network
+  quizdb:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: quizdb
+    ports:
+      - "5433:5432"
+    networks:
+      - my-network
+  service-registry:
+    image: medhansh32/service-registery:v2
+    ports:
+      - "8761:8761"
+    networks:
+      - my-network
+  question-service:
+    image: medhansh32/question-service:v11
+    depends_on:
+      - service-registry
+      - questiondb
+    ports:
+      - "8080:8080"
+    networks:
+      - my-network
+  quiz-service:
+    image: medhansh32/quiz-service:v11
+    depends_on:
+      - service-registry
+      - quizdb
+      - question-service
+    ports:
+      - "8082:8082"
+    networks:
+      - my-network
+  api-gateway:
+    image: medhansh32/api-gateway:v1
+    ports:
+      - "8765:8765"
+    depends_on:
+      - question-service
+      - quiz-service
+    networks:
+      - my-network
+networks:
+  my-network :
+    driver: bridge
