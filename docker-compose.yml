@@ -10,6 +10,9 @@ services:
       - "5432:5432"
     networks:
       - my-network
+    volumes:
+      - questiondb_data:/var/lib/postgresql/data  
+
   quizdb:
     image: postgres:latest
     environment:
@@ -20,31 +23,38 @@ services:
       - "5433:5432"
     networks:
       - my-network
+    volumes:
+      - quizdb_data:/var/lib/postgresql/data 
+
   service-registry:
     image: medhansh32/service-registery:v2
     ports:
       - "8761:8761"
     networks:
       - my-network
+
   question-service:
     image: medhansh32/question-service:v11
     depends_on:
-      - service-registry
       - questiondb
+      - service-registry
+    
     ports:
       - "8080:8080"
     networks:
       - my-network
+
   quiz-service:
     image: medhansh32/quiz-service:v11
     depends_on:
-      - service-registry
       - quizdb
+      - service-registry
       - question-service
     ports:
       - "8082:8082"
     networks:
       - my-network
+
   api-gateway:
     image: medhansh32/api-gateway:v1
     ports:
@@ -54,6 +64,11 @@ services:
       - quiz-service
     networks:
       - my-network
+
 networks:
-  my-network :
+  my-network:
     driver: bridge
+
+volumes:
+  questiondb_data:  
+  quizdb_data:
